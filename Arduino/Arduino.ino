@@ -1,7 +1,10 @@
 #include <DHT.h>
+#include <Adafruit_BME280.h>
 
 #include <SoftwareSerial.h>
 #include <ArduinoJson.h>
+
+Adafruit_BME280 bme;
 
 String isNeedToPowerOnHeater = "";
 
@@ -15,6 +18,10 @@ String flaga;
 void setup() {
   Serial.begin(9600);
   dht.begin(); 
+  if (!bme.begin(0x76)) {
+		Serial.println("Could not find a valid BME280 sensor, check wiring!");
+		while (1);
+	}
 }
 
 void loop() {
@@ -22,6 +29,7 @@ void loop() {
   StaticJsonBuffer<1000> jsonBuffer;
   JsonObject& data = jsonBuffer.createObject();
 
+  bme280_func();
   dht21_func();
 
   data["humidity"] = hum;
@@ -42,6 +50,20 @@ void loop() {
     Serial.println("Bubel");
   }
 
+}
+
+void bme280_func(){
+  Serial.print("Temperature = ");
+	Serial.print(bme.readTemperature());
+	Serial.println("*C");
+
+	Serial.print("Pressure = ");
+	Serial.print(bme.readPressure() / 100.0F);
+	Serial.println("hPa");
+
+	Serial.print("Humidity = ");
+	Serial.print(bme.readHumidity());
+	Serial.println("%");
 }
 
 void dht21_func() {
