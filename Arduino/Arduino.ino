@@ -10,11 +10,13 @@ String isNeedToPowerOnHeater = "";
 
 #define DHTPIN 22
 #define HCSR501 23
+#define DOOR 24
 
 DHT dht(DHTPIN, DHT21);
+
 float temp;
 float hum;
-String test = "dupa";
+
 String flaga;
 
 void setup() {
@@ -25,6 +27,7 @@ void setup() {
 		while (1);
 	}
   pinMode(HCSR501, INPUT);
+  pinMode(DOOR, INPUT_PULLUP);
 }
 
 void loop() {
@@ -32,14 +35,8 @@ void loop() {
   StaticJsonBuffer<1000> jsonBuffer;
   JsonObject& data = jsonBuffer.createObject();
 
-  int move = digitalRead(HCSR501);
-
-  if(move){
-    Serial.println("Move detected");
-  } else {
-    Serial.println("Move is not detected");
-  }
-
+  motionDetection()
+  doorDetecion()
   bme280_func();
   dht21_func();
 
@@ -80,4 +77,24 @@ void bme280_func(){
 void dht21_func() {
   hum = dht.readHumidity();
   temp = dht.readTemperature();
+}
+
+void motionDetection(){
+  int move = digitalRead(HCSR501);
+
+  if(move == HIGH){
+    Serial.println("Move detected");
+  } else {
+    Serial.println("Move is not detected");
+  }
+}
+
+void doorDetection(){
+  int doorIsOpen = digitalRead(DOOR);
+
+  if(doorIsOpen) {
+    Serial.println("Door is open");
+  } else {
+    Serial.println("Door is closed");
+  }
 }
