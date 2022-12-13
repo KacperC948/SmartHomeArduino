@@ -9,6 +9,8 @@ Adafruit_BME280 bme;
 String isNeedToPowerOnHeater = "";
 
 #define DHTPIN 22
+#define HCSR501 23
+
 DHT dht(DHTPIN, DHT21);
 float temp;
 float hum;
@@ -22,12 +24,21 @@ void setup() {
 		Serial.println("Could not find a valid BME280 sensor, check wiring!");
 		while (1);
 	}
+  pinMode(HCSR501, INPUT);
 }
 
 void loop() {
 
   StaticJsonBuffer<1000> jsonBuffer;
   JsonObject& data = jsonBuffer.createObject();
+
+  int move = digitalRead(HCSR501);
+
+  if(move){
+    Serial.println("Move detected");
+  } else {
+    Serial.println("Move is not detected");
+  }
 
   bme280_func();
   dht21_func();
