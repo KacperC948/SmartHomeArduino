@@ -9,11 +9,14 @@ Adafruit_BME280 bme;
 String isNeedToPowerOnHeater = "";
 
 #define DHTPIN 22
-#define HCSR501 23
+#define MOTION 23
 #define DOOR 24
 #define SOUND 25
 #define RAIN A0
+#define HUMIDITY A1
+#define LIGHT A2
 #define PUMP_PIN 26
+#define LED 27
 
 DHT dht(DHTPIN, DHT21);
 
@@ -29,10 +32,11 @@ void setup() {
 		Serial.println("Could not find a valid BME280 sensor, check wiring!");
 		while (1);
 	}
-  pinMode(HCSR501, INPUT);
+  pinMode(MOTION, INPUT);
   pinMode(DOOR, INPUT_PULLUP);
   pinMode(SOUND, INPUT);
   pinMode(PUMP_PIN, OUTPUT);
+  pinMode(LED, INPUT);
 }
 
 void loop() {
@@ -45,6 +49,7 @@ void loop() {
   soundDetection();
   rainDetection();
   readHumidity();
+  readLightIntensity();
   bme280_func();
   dht21_func();
 
@@ -88,11 +93,13 @@ void dht21_func() {
 }
 
 void motionDetection(){
-  int move = digitalRead(HCSR501);
+  int move = digitalRead(MOTION);
 
   if(move == HIGH){
+    turnOnLed();
     Serial.println("Move detected");
   } else {
+    turnOffLed();
     Serial.println("Move is not detected");
   }
 }
@@ -118,7 +125,7 @@ void soundDetection(){
 }
 
 void rainDetection(){
-  int rainValue = analogRead(A0);
+  int rainValue = analogRead(RAIN);
 
   if(rainValue < 1000){
     Serial.println("It's raining");
@@ -128,7 +135,8 @@ void rainDetection(){
 }
 
 void readHumidity(){
-  int humidityValue = analogRead(A1);
+  int humidityValue = analogRead(HUMIDITY);
+
   if(humidityValue > 300){
     digitalWrite(PUMP_PIN, HIGH);
     delay(1500);
@@ -136,4 +144,19 @@ void readHumidity(){
     digitalWrite(PUMP_PIN, LOW);
   }
   Serial.println(humidityValue);
+}
+
+void readLightIntensity(){
+  int light = analogRead(LIGHT);
+
+  Serial.println(light);
+
+}
+
+void turnOnLed(){
+  digitalWrite(LED, HIGH);
+}
+
+void turnOffLed(){
+  digitalWrite(LED, LOW);
 }
