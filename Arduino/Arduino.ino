@@ -11,6 +11,9 @@ String isNeedToPowerOnHeater = "";
 #define DHTPIN 22
 #define HCSR501 23
 #define DOOR 24
+#define SOUND 25
+#define RAIN A0
+#define PUMP_PIN 26
 
 DHT dht(DHTPIN, DHT21);
 
@@ -28,6 +31,8 @@ void setup() {
 	}
   pinMode(HCSR501, INPUT);
   pinMode(DOOR, INPUT_PULLUP);
+  pinMode(SOUND, INPUT);
+  pinMode(PUMP_PIN, OUTPUT);
 }
 
 void loop() {
@@ -35,8 +40,11 @@ void loop() {
   StaticJsonBuffer<1000> jsonBuffer;
   JsonObject& data = jsonBuffer.createObject();
 
-  motionDetection()
-  doorDetecion()
+  motionDetection();
+  doorDetection();
+  soundDetection();
+  rainDetection();
+  readHumidity();
   bme280_func();
   dht21_func();
 
@@ -97,4 +105,35 @@ void doorDetection(){
   } else {
     Serial.println("Door is closed");
   }
+}
+
+void soundDetection(){
+  int sound = digitalRead(SOUND);
+
+  if(sound == HIGH){
+    Serial.println("Sound is not detected");
+  } else {
+    Serial.println("Sound detected");
+  }
+}
+
+void rainDetection(){
+  int rainValue = analogRead(A0);
+
+  if(rainValue < 1000){
+    Serial.println("It's raining");
+  } else {
+    Serial.println("It's not raining");
+  }
+}
+
+void readHumidity(){
+  int humidityValue = analogRead(A1);
+  if(humidityValue > 300){
+    digitalWrite(PUMP_PIN, HIGH);
+    delay(1500);
+  } else {
+    digitalWrite(PUMP_PIN, LOW);
+  }
+  Serial.println(humidityValue);
 }
