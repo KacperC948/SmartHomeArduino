@@ -92,7 +92,37 @@ void setup() {
   Serial.println("WiFi connected");
 
   devices = registerDevices();
-  
+  Serial.println("=============DHT 21===============");
+  Serial.println(devices.dht21.id);
+  Serial.println(devices.dht21.dht21TempSensorId);
+  Serial.println(devices.dht21.dht21HumSensorId);
+
+  Serial.println("=============BME 280===============");
+  Serial.println(devices.bme280.id);
+  Serial.println(devices.bme280.bme280TempSensorId);
+  Serial.println(devices.bme280.bme280HumSensorId);
+  Serial.println(devices.bme280.bme280PresSensorId);
+
+  Serial.println("=============lightDetector===============");
+  Serial.println(devices.lightDetector.deviceId);
+  Serial.println(devices.lightDetector.sensorId);
+
+  Serial.println("=============movementDetector===============");
+  Serial.println(devices.movementDetector.deviceId);
+  Serial.println(devices.movementDetector.sensorId);
+
+  Serial.println("=============rainDetector===============");
+  Serial.println(devices.rainDetector.deviceId);
+  Serial.println(devices.rainDetector.sensorId);
+
+  Serial.println("=============windowOpenDetector===============");
+  Serial.println(devices.windowOpenDetector.deviceId);
+  Serial.println(devices.windowOpenDetector.sensorId);
+
+  Serial.println("=============soilMoisture===============");
+  Serial.println(devices.soilMoisture.deviceId);
+  Serial.println(devices.soilMoisture.sensorId);
+
   delay(1000);
 }
 
@@ -158,12 +188,13 @@ void postObservation(float value, int sensorId){
   int httpResponse;
   String payload;
 
-  string postObseravtion = "http://192.168.1.3/" + to_string(sensorId) + "/obseravtion/add";
+  string postObseravtion = "http://192.168.1.3:8080/observation/add";
 
   StaticJsonBuffer<300> JSONbuffer;
 
   JsonObject& floatValue = JSONbuffer.createObject();
   floatValue["value"] = value;
+  floatValue["sensorId"] = sensorId;
 
   char JSONmessageBuffer[100];
   floatValue.prettyPrintTo(JSONmessageBuffer, sizeof(JSONmessageBuffer));
@@ -187,12 +218,13 @@ void postObservation(bool value, int sensorId){
   int httpResponse;
   String payload;
 
-  string postObseravtion = "http://192.168.1.3/" + to_string(sensorId) + "/obseravtion/add";
+  string postObseravtion = "http://192.168.1.3:8080/observation/add";
 
   StaticJsonBuffer<300> JSONbuffer;
 
   JsonObject& boolValue = JSONbuffer.createObject();
-  boolValue["value"] = value;
+  boolValue["logicalValue"] = value;
+  boolValue["sensorId"] = sensorId;
 
   char JSONmessageBuffer[100];
   boolValue.prettyPrintTo(JSONmessageBuffer, sizeof(JSONmessageBuffer));
@@ -215,12 +247,13 @@ void postObservation(int value, int sensorId){
   int httpResponse;
   String payload;
 
-  string postObseravtion = "http://192.168.1.3/" + to_string(sensorId) + "/obseravtion/add";
+  string postObseravtion = "http://192.168.1.3:8080/observation/add";
 
   StaticJsonBuffer<300> JSONbuffer;
 
   JsonObject& intValue = JSONbuffer.createObject();
   intValue["value"] = value;
+  intValue["sensorId"] = sensorId;
 
   char JSONmessageBuffer[100];
   intValue.prettyPrintTo(JSONmessageBuffer, sizeof(JSONmessageBuffer));
