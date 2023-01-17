@@ -10,8 +10,8 @@
 
 using namespace std;
 
-const char* ssid = "Dom_2.4G"; // Write here your router's username
-const char* password = "#Kosinskiego#4@"; // Write here your router's passward
+const char* ssid = ""; // Write here your router's username
+const char* password = ""; // Write here your router's passward
 
 String isNeedToPowerOnHeater;
 String flags;
@@ -304,12 +304,12 @@ DeviceDht21 registerDht21Device(){
   JsonObject& dht21DeviceTempSensor = dht21Sensors.createNestedObject();
   dht21DeviceTempSensor["model"] = "Dht21 temperature sensor";
   dht21DeviceTempSensor["unit"] = "celsius";
-  dht21DeviceTempSensor["type"] = "temperature";
+  dht21DeviceTempSensor["type"] = "temperatureOutdoor";
   
   JsonObject& dht21DeviceHumSensor = dht21Sensors.createNestedObject();
   dht21DeviceHumSensor["model"] = "Dht21 humidity sensor";
   dht21DeviceHumSensor["unit"] = "percentage";
-  dht21DeviceHumSensor["type"] = "humidity";  
+  dht21DeviceHumSensor["type"] = "humidityOutdoor";  
 
   char JSONmessageBuffer[400];
   dht21.prettyPrintTo(JSONmessageBuffer, sizeof(JSONmessageBuffer));
@@ -358,17 +358,17 @@ DeviceBme280 registerBme280Device(){
   JsonObject& bme280DeviceTempSensor = bme280Sensors.createNestedObject();
   bme280DeviceTempSensor["model"] = "Bme280 temperature sensor";
   bme280DeviceTempSensor["unit"] = "celsius";
-  bme280DeviceTempSensor["type"] = "temperature";
+  bme280DeviceTempSensor["type"] = "temperatureIndoor";
   
   JsonObject& bme280DeviceHumSensor = bme280Sensors.createNestedObject();
   bme280DeviceHumSensor["model"] = "Bme280 humidity sensor";
   bme280DeviceHumSensor["unit"] = "percentage";
-  bme280DeviceHumSensor["type"] = "humidity";
+  bme280DeviceHumSensor["type"] = "humidityIndoor";
 
   JsonObject& bme280DevicePresSensor = bme280Sensors.createNestedObject();
   bme280DevicePresSensor["model"] = "Bme280 pressure sensor";
   bme280DevicePresSensor["unit"] = "hPa";
-  bme280DevicePresSensor["type"] = "atmospheric pressure ";
+  bme280DevicePresSensor["type"] = "atmosphericPressureIndoor ";
 
   char JSONmessageBuffer[450];
   bme280.prettyPrintTo(JSONmessageBuffer, sizeof(JSONmessageBuffer));
@@ -418,7 +418,7 @@ DeviceMovementDetector registerMovementDetectorDevice(){
   JsonObject& movementDetectorSensor = movementDetectorSensors.createNestedObject();
   movementDetectorSensor["model"] = "Movement detector sensor";
   movementDetectorSensor["unit"] = "boolean";
-  movementDetectorSensor["type"] = "logical";
+  movementDetectorSensor["type"] = "movement";
 
   char JSONmessageBuffer[400];
   movementDetector.prettyPrintTo(JSONmessageBuffer, sizeof(JSONmessageBuffer));
@@ -466,7 +466,7 @@ DeviceWindowOpenDetector registerWindowOpenDetectorDevice(){
   JsonObject& windowOpenDetectorSensor = windowOpenDetectorSensors.createNestedObject();
   windowOpenDetectorSensor["model"] = "Window open detector sensor";
   windowOpenDetectorSensor["unit"] = "boolean";
-  windowOpenDetectorSensor["type"] = "logical";
+  windowOpenDetectorSensor["type"] = "window";
 
   char JSONmessageBuffer[400];
   windowOpenDetector.prettyPrintTo(JSONmessageBuffer, sizeof(JSONmessageBuffer));
@@ -514,7 +514,7 @@ DeviceRainDetector registerRainDetectorDevice(){
   JsonObject& rainDetectorSensor = rainDetectorSensors.createNestedObject();
   rainDetectorSensor["model"] = "Rain detector sensor";
   rainDetectorSensor["unit"] = "boolean";
-  rainDetectorSensor["type"] = "logical";
+  rainDetectorSensor["type"] = "rain";
 
   char JSONmessageBuffer[400];
   rainDetector.prettyPrintTo(JSONmessageBuffer, sizeof(JSONmessageBuffer));
@@ -562,7 +562,7 @@ DeviceSoilMoisture registerSoilMoistureDevice(){
   JsonObject& soilMoistureDetectorSensor = soilMoistureDetectorSensors.createNestedObject();
   soilMoistureDetectorSensor["model"] = "Soil moisture detector sensor";
   soilMoistureDetectorSensor["unit"] = "boolean";
-  soilMoistureDetectorSensor["type"] = "logical";
+  soilMoistureDetectorSensor["type"] = "soil";
 
   char JSONmessageBuffer[400];
   soilMoistureDetector.prettyPrintTo(JSONmessageBuffer, sizeof(JSONmessageBuffer));
@@ -610,7 +610,7 @@ DeviceLightDetector registerLightDetectorDevice(){
   JsonObject& lightDetectorSensor = lightDetectorSensors.createNestedObject();
   lightDetectorSensor["model"] = "Light detector sensor";
   lightDetectorSensor["unit"] = "boolean";
-  lightDetectorSensor["type"] = "logical";
+  lightDetectorSensor["type"] = "light";
 
   char JSONmessageBuffer[400];
   lightDetector.prettyPrintTo(JSONmessageBuffer, sizeof(JSONmessageBuffer));
