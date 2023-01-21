@@ -1,158 +1,161 @@
-//ThatsEngineering
-//Sending Data from Arduino to NodeMCU Via Serial Communication
-//Arduino code
-
-//DHT11 Lib
 #include <DHT.h>
-
-//Arduino to NodeMCU Lib
-#include <SoftwareSerial.h>
-#include <ArduinoJson.h>
-#include <Adafruit_Sensor.h>
 #include <Adafruit_BME280.h>
-
-#define DOOR_SENSOR_PIN 24
-#define LIGHT_SENSOR_PIN 25
-#define MOVEMENT_SENSOR_PIN 23
-#define DHTPIN 22
-
-//Initialise Arduino to NodeMCU (19=Rx & 18=Tx)
-SoftwareSerial nodemcu(19, 18);
-Adafruit_BME280 bme;
+#include <ArduinoJson.h>
 
 String isNeedToPowerOnHeater = "";
-int doorState;
-//Initialisation of DHT11 Sensor
+
+#define DHTPIN 22
+#define MOTION 23
+#define WINDOW 24
+//#define SOUND 25
+#define RAIN A0
+#define SOIL A1
+#define PUMP_PIN 26
+#define LED 27
+#define LIGHT 25
 
 DHT dht(DHTPIN, DHT21);
-float temp;
-float hum;
-String flaga;
+Adafruit_BME280 bme;
 
-struct DHT21Read {
-  float humidity;
-  float temperature;
+String flag;
+
+struct dht21 {
+  float temp;
+  float hum;
 };
 
-struct BME280Read {
-  float humidity;
+struct bme280 { 
   float temperature;
   float pressure;
+  float humidity;
 };
-
 
 void setup() {
   Serial.begin(9600);
-  pinMode(MOVEMENT_SENSOR_PIN, INPUT);
-  pinMode(DOOR_SENSOR_PIN, INPUT_PULLUP);
-  pinMode(LIGHT_SENSOR_PIN, INPUT);
-
+  dht.begin(); 
   if (!bme.begin(0x76)) {
 		Serial.println("Could not find a valid BME280 sensor, check wiring!");
 		while (1);
 	}
-  dht.begin(); 
-
+  pinMode(MOTION, INPUT);
+  pinMode(WINDOW, INPUT_PULLUP);
+  pinMode(SOUND, INPUT);
+  pinMode(PUMP_PIN, OUTPUT);
+  pinMode(LED, INPUT);
 }
 
 void loop() {
-  createData();
 
-  flaga = Serial.readString();
+  readValuesFromSensorsAndSendJsonToNodeMcu();
+  flag = Serial.readString();
 
-  if(flaga.length() > 1){
-    if (flaga[0] == '1'){
+  if(flag.length() > 1){
+    if (flag[0] == '1'){
      Serial.println("Odpalam ogrzewanie"); 
     }
-    if (flaga[1] == '1'){
+    if (flag[1] == '1'){
       Serial.println("Podlewam kwiatka"); 
     }
   } else {
     Serial.println("Bubel");
   }
+
 }
 
-void createData(){
+void readValuesFromSensorsAndSendJsonToNodeMcu(){
   StaticJsonBuffer<1000> jsonBuffer;
   JsonObject& data = jsonBuffer.createObject();
 
-  DHT21Read Reading1;
-  BME280Read Reading2;
-  Reading1 = dht21Sensor();
-  Reading2 = bme280Sensor();
+  data["humidity_DHT"] = readDht21().hum;
+  data["temperature_DHT"] = readDht21().temp;
+  data["humidity_BME"] = readBme280().humidity;
+  data["temperature_BME"] = readBme280().temperature;
+  data["pressure_BME"] = readBme280().pressure;
+  data["isMovementDetected"] = readMotionDetection();
+  data["isWindowOpen"] = readWindowDetection();
+  data["isRaining"] = readRainDetection();
+  data["soil_moisture"] = readSoilMoisture();
+  data["isLightOn"] = readLightDetection();
 
-  data["humidity_DHT"] = Reading1.humidity;
-  data["temperature_DHT"] = Reading1.temperature;
-  data["temperature_BME"] = Reading2.temperature;
-  data["humidity_BME"] = Reading2.humidity;
-  data["pressure_BME"] = Reading2.pressure;
-  data["soil_moisture"] = soilSensor();
-  data["isDoorOpen"] = doorSensor();
-  data["isRaining"] = rainSensor();
-  data["isLightOn"] = lightSensor();
-  data["isMovementDetected"] = movementSensor();
   data.printTo(Serial);
   jsonBuffer.clear();
 }
 
-bool rainSensor(){
-    int rainSensor = analogRead(A0); // read state
-    if (rainSensor < 600)
-    {
-      return true;
-    }
-    else {
-      return false;
-    }
+dht21 readDht21() {
+  dht21 values;
+
+  values.hum = dht.readHumidity();
+  values.temp = dht.readTemperature();
+
+  return values;
 }
 
-bool lightSensor(){
-  int lightState = digitalRead(LIGHT_SENSOR_PIN); // read state
+bme280 readBme280() {
+  bme280 values;
 
-  if (lightState == HIGH) {
-    return false; // światło jest wyłączone
+  values.temperature = bme.readTemperature();
+  values.pressure = bme.readPressure() / 100.0F;
+  values.humidity = bme.readHumidity();
+
+  return values;
+}
+
+bool readMotionDetection() {
+
+  if(digitalRead(MOTION) == HIGH){
+    turnOnLed();
+    return true;
   } else {
-    return true; // światło jest włączone
+    turnOffLed();
+    return false;
   }
 }
 
-bool doorSensor(){
-    doorState = digitalRead(DOOR_SENSOR_PIN); // read state
+bool readWindowDetection(){ 
 
-  if (doorState == HIGH) {
-    return true; //drzwi są otwarte
+  if(digitalRead(WINDOW) == HIGH) {
+    return true;
   } else {
-    return false; //drzwi są zamknięte
+    return false;
   }
 }
 
-BME280Read bme280Sensor(){
-  BME280Read BmeRead;
-  BmeRead.temperature = bme.readTemperature();
-  BmeRead.pressure = bme.readPressure() / 100.0F;
-  BmeRead.humidity = bme.readHumidity();
-  return BmeRead;
-}
+bool readRainDetection() {
+  int rainValue = analogRead(RAIN);
 
-int soilSensor(){
-    int rainSensor = analogRead(A1); // read state
-    return rainSensor;
-}
-
-bool movementSensor(){
-  int ruch = digitalRead(MOVEMENT_SENSOR_PIN);      
-  if(ruch == HIGH)
-  {
-   return true; // wykryto ruch
-  }
-  else  {
-    return false; // nie wykryto ruchu
+  if(rainValue < 600){
+    return true;
+  } else {
+    return false;
   }
 }
 
-DHT21Read dht21Sensor() {
-  DHT21Read dhtRead;
-  dhtRead.humidity = dht.readHumidity();
-  dhtRead.temperature = dht.readTemperature();
-  return dhtRead;
+int readSoilMoisture() {
+  int soilMoistureValue = analogRead(SOIL);
+
+  if(soilMoistureValue > 400){
+    digitalWrite(PUMP_PIN, HIGH);
+  } else {
+    digitalWrite(PUMP_PIN, LOW);
+  }
+  
+  return soilMoistureValue;
+}
+
+bool readLightDetection() {
+
+  if(digitalRead(LIGHT) == HIGH){
+    return false;
+  } else {
+    return true;
+  }
+
+}
+
+void turnOnLed() {
+  digitalWrite(LED, HIGH);
+}
+
+void turnOffLed(){
+  digitalWrite(LED, LOW);
 }
